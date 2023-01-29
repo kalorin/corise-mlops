@@ -19,10 +19,11 @@ class TransformerFeaturizer(BaseEstimator, TransformerMixin):
 
     #  transformation: return the encoding of the document as returned by the transformer model
     def transform(self, X, y=None):
-        X_t = []
-        for doc in X:
-            X_t.append(self.sentence_transformer_model.encode(doc))
-        return X_t
+        #X_t = []
+        #for doc in X.split():
+        #    X_t.append(self.sentence_transformer_model.encode(doc))
+        #return X_t
+        return self.sentence_transformer_model.encode([X])
 
 
 class NewsCategoryClassifier:
@@ -72,7 +73,23 @@ class NewsCategoryClassifier:
             ...
         }
         """
-        return {}
+        results = {}
+
+        logger.info(f"(Classifier)All Classes: {self.classes}")
+
+        all_probs = self.pipeline.predict_proba(model_input.description)
+        logger.info(f"(Classifier)All Probs: {all_probs}")
+        for prob in all_probs:
+            print(f"Prob: {prob}")
+            for label, p in zip(self.classes, prob):
+                print(f"  {label}: {p}")
+
+        best_prob = all_probs[0]
+        logger.info(f"(Classifier)Best Prob: {best_prob}")
+
+        for label, proba in zip(self.classes, best_prob):
+            results[label] = proba
+        return results
 
     def predict_label(self, model_input: dict) -> str:
         """
